@@ -1,0 +1,7 @@
+﻿run,experiment,augment,n_parameters,epochs_run,best_epoch,val_macro_auroc,auroc_NORM,auroc_MI,auroc_STTC,auroc_CD,auroc_HYP,val_macro_pr_auc,time_sec,seed,git_commit,git_dirty
+2026-11-05_baseline_lightgbm,baseline_lightgbm_ovr,—,,,,0.8939,0.9172,0.8634,0.899,0.8831,0.9066,0.7505,30.5,42,60b7b8e,True
+2026-11-05_cnn1d,cnn1d,нет,766533,15,7,0.9263,0.9415,0.9213,0.9304,0.9298,0.9085,0.8098,62.9,42,f167c50,True
+2026-11-05_resnet1d,resnet1d,нет,2192197,14,6,0.9231,0.9435,0.911,0.9323,0.9292,0.8996,0.8037,130.1,42,f167c50,True
+2026-11-05_resnet1d_234721,resnet1d,нет,2192197,14,6,0.9231,0.9435,0.911,0.9323,0.9292,0.8996,0.8037,128.9,42,f167c50,True
+2026-11-05_resnet1d_aug,resnet1d_aug,да,2192197,25,17,0.9271,0.9462,0.93,0.9312,0.9281,0.8999,0.8109,266.8,42,f167c50,True
+2026-11-06_cnn1d_aug,cnn1d_aug,да,766533,25,17,0.9277,0.9405,0.9272,0.9316,0.9351,0.9041,0.813,138.0,42,f167c50,True
