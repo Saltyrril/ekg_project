@@ -9,6 +9,11 @@ scikit-learn>=1.5
 matplotlib>=3.9
 pyyaml>=6.0
 
+# бейзлайн без нейросетей (src/features.py, src/baseline.py)
+lightgbm==4.7.0     # градиентный бустинг, CPU; нативно работает с NaN в признаках
+neurokit2==0.3.0    # R-пики, ЧСС, делинеация волн (PR/QRS/QT); тянет pywavelets
+joblib>=1.4         # параллельный расчёт признаков (уже приходит с scikit-learn)
+
 # ноутбуки (EDA, анализ ошибок)
 nbformat==5.11.1
 nbclient==0.11.0
