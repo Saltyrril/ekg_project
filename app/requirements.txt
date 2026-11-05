@@ -1,0 +1,11 @@
+# Зависимости демо (папка app/) для Hugging Face Space или отдельного чистого venv.
+# НЕ ставьте этот файл в .venv обучения: CUDA-сборка torch заменится на CPU-сборку.
+# CPU-сборка torch: бесплатный Space без GPU, а обычный torch с PyPI под Linux тянет CUDA (~2 ГБ лишнего).
+--extra-index-url https://download.pytorch.org/whl/cpu
+gradio==6.31.0         # ДОЛЖНА совпадать с sdk_version в README.md (Space ставит gradio по ней)
+torch==2.14.1+cpu      # та же версия, что при обучении
+numpy==2.5.4
+scipy==1.18.1          # resample_poly (500 -> 100 Гц), сглаживание карты значимости
+wfdb==4.3.1            # чтение записей PTB-XL (.hea + .dat)
+pandas==3.1.1          # зависимость wfdb; закреплена, чтобы на Space была та же версия, что локально
+matplotlib==3.11.2     # графики отведений и карты значимости
