@@ -1,0 +1,40 @@
+# Эксперимент с отведениями: 6 отведений от конечностей. Всё остальное идентично configs/cnn1d_aug.yaml.
+# Запуск: python -m src.train --config configs/cnn1d_aug_leads_limb6.yaml
+seed: 42
+data_config: configs/data.yaml      # разбиение, классы, кэш сигналов (НЕ МЕНЯТЬ фолды)
+experiment_name: cnn1d_aug_leads_limb6
+leads: [I, II, III, AVR, AVL, AVF]                       # какие отведения подаём в модель (имена PTB-XL) или all
+output_root: results                # итог: results/<дата>_<experiment_name>/
+
+model:
+  name: cnn1d
+  params:
+    channels: [32, 64, 128, 256, 256]
+    kernel_size: 7
+    dropout: 0.3
+
+train:
+  epochs: 40
+  batch_size: 128                   # замер (--probe-batch): пик 0.20 ГБ из 4
+  grad_accum_steps: 1
+  eval_batch_size: 256
+  lr: 1.0e-3
+  min_lr: 1.0e-5
+  warmup_epochs: 1
+  weight_decay: 1.0e-2
+  grad_clip: 1.0
+  amp_dtype: float16
+  pos_weight: false
+  early_stopping:
+    patience: 8
+    min_delta: 0.0005
+  probe_sizes: [32, 64, 128, 256, 512]
+
+# Аугментации только для train (после z-нормализации; амплитуды в единицах std отведения).
+# Всё остальное — как в configs/cnn1d.yaml: отличие только в аугментациях. p: 0 выключает отдельную.
+augment:
+  enabled: true
+  time_shift: {p: 0.5, max_shift_sec: 0.5}            # сдвиг по времени ±0.5 с, края повторяются
+  amplitude: {p: 0.5, low: 0.8, high: 1.2, per_lead: false}   # масштаб амплитуды ×U(0.8, 1.2)
+  baseline_wander: {p: 0.5, max_amp: 0.3, freq_hz: [0.05, 0.5]}  # дрейф изолинии (дыхание)
+  noise: {p: 0.5, std: 0.05}                          # гауссов шум
