@@ -26,7 +26,7 @@ import yaml
 from torch import nn
 
 from src.augment import Augmenter
-from src.data import PROJECT_ROOT, _resolve, load_config, load_splits
+from src.data import PROJECT_ROOT, _resolve, lead_indices, load_config, load_splits
 from src.evaluate import multilabel_metrics
 from src.models import build_model, count_parameters, set_output_bias
 
@@ -194,8 +194,13 @@ def fit(cfg: dict[str, Any], data_cfg: dict[str, Any], run_dir: Path, limit: int
         tr_sl, va_sl = slice(0, limit), slice(0, limit)
     else:
         tr_sl = va_sl = slice(None)
-    X_tr, y_tr = torch.from_numpy(tr.X[tr_sl]), torch.from_numpy(tr.y[tr_sl]).float()
-    X_va, y_va = torch.from_numpy(va.X[va_sl]), torch.from_numpy(va.y[va_sl]).float()
+    # Выбор отведений (после нормализации по train: она по-отведенческая, так что результат тот же)
+    lead_idx = lead_indices(meta["leads"], cfg.get("leads"))
+    lead_names = [meta["leads"][i] for i in lead_idx]
+    print(f"Отведения ({len(lead_idx)}): {lead_names}", flush=True)
+    X_tr = torch.from_numpy(np.ascontiguousarray(tr.X[tr_sl][:, lead_idx]))
+    X_va = torch.from_numpy(np.ascontiguousarray(va.X[va_sl][:, lead_idx]))
+    y_tr, y_va = torch.from_numpy(tr.y[tr_sl]).float(), torch.from_numpy(va.y[va_sl]).float()
     classes: list[str] = meta["classes"]
 
     model = build_model(cfg["model"]["name"], X_tr.shape[1], len(classes), **cfg["model"]["params"])
@@ -266,6 +271,7 @@ def fit(cfg: dict[str, Any], data_cfg: dict[str, Any], run_dir: Path, limit: int
         "best_epoch": best_epoch,
         "epochs_run": len(history),
         "history": history,
+        "leads": lead_names,
         "model": {"name": cfg["model"]["name"], "params": cfg["model"]["params"], "n_parameters": n_params},
         "train_setup": {
             "batch_size": bs, "grad_accum_steps": accum, "effective_batch": bs * accum,
@@ -309,6 +315,8 @@ def main() -> None:
         cfg["train"]["epochs"] = args.epochs
     data_cfg = load_config(cfg["data_config"])["data"]
     n_classes, length = len(data_cfg["classes"]), data_cfg["sampling_rate"] * 10
+    if args.probe_batch and cfg.get("leads") not in (None, "all"):
+        print("Замечание: --probe-batch использует 12 входных каналов независимо от leads (оценка сверху).")
 
     if args.probe_batch:
         probe_batch_sizes(cfg, n_classes, length, cfg["train"]["probe_sizes"])
