@@ -23,7 +23,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from src.data import (  # noqa: E402
-    CANONICAL_FOLDS, SPLITS, _cache_dir, _fingerprint, _read_record, _resolve, build_labels, compute_norm_stats,
+    CANONICAL_FOLDS, PROJECT_ROOT, SPLITS, _cache_dir, _fingerprint, _read_record, _resolve, build_labels, compute_norm_stats,
     load_config, load_metadata,
 )
 
@@ -44,7 +44,8 @@ def main() -> int:
     y_csv = build_labels(db, scp, data_cfg["classes"], data_cfg["min_likelihood"])
     has_label = y_csv.any(axis=1)
     row_of = {eid: i for i, eid in enumerate(db.index)}
-    report: dict[str, Any] = {"cache_dir": str(cache), "fingerprint_meta": meta["fingerprint"],
+    cache_rel = cache.relative_to(PROJECT_ROOT).as_posix() if cache.is_relative_to(PROJECT_ROOT) else cache.name
+    report: dict[str, Any] = {"cache_dir": cache_rel, "fingerprint_meta": meta["fingerprint"],
                               "fingerprint_config": _fingerprint(data_cfg), "splits": {}}
     ok = report["fingerprint_meta"] == report["fingerprint_config"]
     patients: dict[str, set[int]] = {}
