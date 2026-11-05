@@ -1,0 +1,21 @@
+# Данные (PTB-XL ~3 ГБ) — не коммитим
+data/*
+!data/.gitkeep
+
+# Результаты: большие файлы не коммитим, лёгкие логи/метрики — да
+results/**/*.pt
+results/**/*.pth
+results/**/*.ckpt
+results/**/*.npy
+results/**/*.npz
+results/**/*.h5
+results/**/checkpoints/
+
+# Python / окружения
+__pycache__/
+*.pyc
+.venv/
+.venv_test/
+venv/
+.ipynb_checkpoints/
+.pytest_cache/
