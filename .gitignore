@@ -11,6 +11,9 @@ results/**/*.npz
 results/**/*.h5
 results/**/checkpoints/
 
+# Временные и проверочные (smoke) прогоны — вне results/
+tmp/
+
 # Python / окружения
 __pycache__/
 *.pyc
