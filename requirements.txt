@@ -6,6 +6,8 @@ wfdb>=4.1
 pandas>=2.2
 numpy>=1.26
 scikit-learn>=1.5
+scipy>=1.13         # импортируется напрямую (src/evaluate.py, src/explain.py); раньше приходил только через scikit-learn
+packaging>=24.0     # scripts/check_env.py (раньше приходил транзитивно через matplotlib)
 matplotlib>=3.9
 pyyaml>=6.0
 
