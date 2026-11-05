@@ -1,0 +1,15 @@
+# PyTorch с CUDA ставится ОТДЕЛЬНО (см. README.md), иначе pip поставит CPU-версию:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu126
+# torch>=2.6   # раскомментируйте, только если ставите вместе с --index-url
+
+wfdb>=4.1
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.5
+matplotlib>=3.9
+pyyaml>=6.0
+
+# ноутбуки (EDA, анализ ошибок)
+nbformat==5.11.1
+nbclient==0.11.0
+ipykernel==7.4.0

@@ -1,0 +1,63 @@
+{
+  "n_total_in_csv": 21799,
+  "n_excluded_no_superclass": 411,
+  "n_kept": 21388,
+  "patient_overlap": {
+    "train-val": 0,
+    "train-test": 0,
+    "val-test": 0
+  },
+  "splits": {
+    "train": {
+      "n": 17084,
+      "excluded_no_superclass": 334,
+      "class_counts": {
+        "NORM": 7596,
+        "MI": 4379,
+        "STTC": 4186,
+        "CD": 3907,
+        "HYP": 2119
+      },
+      "labels_per_record": {
+        "1": 12957,
+        "2": 3274,
+        "3": 730,
+        "4": 123
+      }
+    },
+    "val": {
+      "n": 2146,
+      "excluded_no_superclass": 37,
+      "class_counts": {
+        "NORM": 955,
+        "MI": 540,
+        "STTC": 528,
+        "CD": 495,
+        "HYP": 268
+      },
+      "labels_per_record": {
+        "1": 1637,
+        "2": 396,
+        "3": 95,
+        "4": 18
+      }
+    },
+    "test": {
+      "n": 2158,
+      "excluded_no_superclass": 40,
+      "class_counts": {
+        "NORM": 963,
+        "MI": 550,
+        "STTC": 521,
+        "CD": 496,
+        "HYP": 262
+      },
+      "labels_per_record": {
+        "1": 1650,
+        "2": 398,
+        "3": 94,
+        "4": 16
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+# Конфиг подготовки данных PTB-XL. Используется src/data.py и (секция data) обучением.
+seed: 42
+
+data:
+  # Папка с ptbxl_database.csv, scp_statements.csv и records100/ (распакованный архив PhysioNet)
+  root: data/ptb-xl
+  cache_dir: data/cache
+  sampling_rate: 100            # 100 -> filename_lr, 500 -> filename_hr
+  classes: [NORM, MI, STTC, CD, HYP]
+  # Минимальный likelihood кода из scp_codes. 0 = учитывать все коды (как в бенчмарке PTB-XL).
+  min_likelihood: 0
+  # Разбиение по правилам проекта. НЕ МЕНЯТЬ.
+  folds:
+    train: [1, 2, 3, 4, 5, 6, 7, 8]
+    val: [9]
+    test: [10]
+  normalization: per_lead       # per_lead (mean/std по каждому отведению) | global
+  num_workers: 8                # потоки для чтения файлов wfdb
+  stats_path: results/data_stats.json
