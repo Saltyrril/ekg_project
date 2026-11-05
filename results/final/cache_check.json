@@ -1,0 +1,99 @@
+{
+  "cache_dir": "C:\\Users\\Saltyrril\\Desktop\\ekg_project\\data\\cache\\ptbxl_100hz",
+  "fingerprint_meta": "bac2a75be5ed",
+  "fingerprint_config": "bac2a75be5ed",
+  "splits": {
+    "train": {
+      "n": 17084,
+      "strat_folds_in_csv": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "strat_fold_matches_rules": true,
+      "unique_ecg_id": true,
+      "record_set_equals_csv": true,
+      "n_missing_vs_csv": 0,
+      "n_extra_vs_csv": 0,
+      "patient_id_matches_csv": true,
+      "labels_match_csv": true,
+      "shapes_consistent": true,
+      "excluded_no_superclass_csv": 334,
+      "excluded_no_superclass_meta": 334,
+      "signal_samples_checked": 30,
+      "signal_max_abs_diff_vs_wfdb": 0.0,
+      "excluded_matches_meta": true,
+      "signals_match_wfdb": true,
+      "passed": true
+    },
+    "val": {
+      "n": 2146,
+      "strat_folds_in_csv": [
+        9
+      ],
+      "strat_fold_matches_rules": true,
+      "unique_ecg_id": true,
+      "record_set_equals_csv": true,
+      "n_missing_vs_csv": 0,
+      "n_extra_vs_csv": 0,
+      "patient_id_matches_csv": true,
+      "labels_match_csv": true,
+      "shapes_consistent": true,
+      "excluded_no_superclass_csv": 37,
+      "excluded_no_superclass_meta": 37,
+      "signal_samples_checked": 30,
+      "signal_max_abs_diff_vs_wfdb": 0.0,
+      "excluded_matches_meta": true,
+      "signals_match_wfdb": true,
+      "passed": true
+    },
+    "test": {
+      "n": 2158,
+      "strat_folds_in_csv": [
+        10
+      ],
+      "strat_fold_matches_rules": true,
+      "unique_ecg_id": true,
+      "record_set_equals_csv": true,
+      "n_missing_vs_csv": 0,
+      "n_extra_vs_csv": 0,
+      "patient_id_matches_csv": true,
+      "labels_match_csv": true,
+      "shapes_consistent": true,
+      "excluded_no_superclass_csv": 40,
+      "excluded_no_superclass_meta": 40,
+      "signal_samples_checked": 30,
+      "signal_max_abs_diff_vs_wfdb": 0.0,
+      "excluded_matches_meta": true,
+      "signals_match_wfdb": true,
+      "passed": true
+    }
+  },
+  "patient_overlap": {
+    "cache": {
+      "train-val": 0,
+      "train-test": 0,
+      "val-test": 0
+    },
+    "csv_all_records": {
+      "train-val": 0,
+      "train-test": 0,
+      "val-test": 0
+    },
+    "passed": true
+  },
+  "normalization": {
+    "mode": "per_lead",
+    "computed_on": "X_train.npy",
+    "max_abs_diff_mean": 0.0,
+    "max_abs_diff_std": 0.0,
+    "max_rel_diff_std": 0.0,
+    "passed": true
+  },
+  "passed": true
+}
