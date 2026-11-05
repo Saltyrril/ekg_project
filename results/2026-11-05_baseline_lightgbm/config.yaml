@@ -1,0 +1,38 @@
+# Бейзлайн без нейросетей: признаки (src/features.py) + LightGBM one-vs-rest на CPU.
+seed: 42
+data_config: configs/data.yaml      # разбиение, классы, кэш сигналов (НЕ МЕНЯТЬ фолды)
+output_dir: results/baseline
+
+features:
+  cache_dir: data/cache/features_100hz
+  rhythm:                           # neurokit2: ЧСС, RR, PR/QRS/QT/QTc
+    enabled: true
+    lead: II                        # отведение для детекции R-пиков и делинеации
+    chunk_size: 200                 # записей на задачу joblib
+    min_valid_beats: 3              # сколько ударов с правдоподобным интервалом нужно для медианы
+    limits:                         # физиологичные границы; вне них значение -> NaN
+      rr_s: [0.25, 3.0]
+      pr_ms: [60, 400]
+      qrs_ms: [40, 250]
+      qt_ms: [200, 700]
+  # Признак с долей валидных значений на train ниже порога выбрасывается ("неустойчивое извлечение")
+  min_coverage: 0.8
+
+lightgbm:                           # CPU, по классу one-vs-rest
+  params:
+    objective: binary
+    metric: auc
+    learning_rate: 0.05
+    n_estimators: 1000
+    num_leaves: 31
+    min_child_samples: 20
+    subsample: 0.8
+    subsample_freq: 1
+    colsample_bytree: 0.5
+    reg_lambda: 1.0
+    n_jobs: 12
+    deterministic: true
+    force_row_wise: true
+    verbosity: -1
+  early_stopping_rounds: 50         # ранняя остановка по AUROC на val (фолд 9) — допустимо правилами
+n_jobs_features: 10                 # процессы для neurokit2
