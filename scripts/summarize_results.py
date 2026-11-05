@@ -26,6 +26,9 @@ def load_runs() -> list[dict[str, Any]]:
             "run": path.parent.name,
             "experiment": m["experiment"],
             "augment": "да" if setup.get("augment") else ("нет" if setup else "—"),
+            # старые запуски (до параметра leads) обучались на всех 12; у бейзлайна свои признаки
+            "leads": ",".join(m["leads"]) if "leads" in m else ("все 12" if setup else "—"),
+            "n_leads": len(m["leads"]) if "leads" in m else (12 if setup else ""),
             "n_parameters": m.get("model", {}).get("n_parameters", ""),
             "epochs_run": m.get("epochs_run", ""),
             "best_epoch": m.get("best_epoch", ""),
@@ -48,6 +51,23 @@ def write_csv(rows: list[dict[str, Any]], path: Path) -> None:
         writer.writerows(rows)
 
 
+def leads_section(rows: list[dict[str, Any]]) -> list[str]:
+    """Сравнение запусков cnn1d_aug_leads_* по наборам отведений (val, фолд 9); лучший по macro AUROC жирным."""
+    sel = sorted((r for r in rows if r["experiment"].startswith("cnn1d_aug_leads_")), key=lambda r: r["n_leads"])
+    if not sel:
+        return []
+    best = max(r["val_macro_auroc"] for r in sel)
+    cols = ["Отведения", "macro AUROC"] + CLASSES
+    out = ["## Сравнение по отведениям (cnn1d_aug, val, фолд 9)", "",
+           "| " + " | ".join(cols) + " |", "|" + "|".join("---" for _ in cols) + "|"]
+    for r in sel:
+        is_best = r["val_macro_auroc"] == best
+        name = f"{r['n_leads']}: {r['leads']}" + (" ← лучший" if is_best else "")
+        auc = f"**{r['val_macro_auroc']}**" if is_best else str(r["val_macro_auroc"])
+        out.append("| " + " | ".join([name, auc] + [str(r[f"auroc_{c}"]) for c in CLASSES]) + " |")
+    return [*out, ""]
+
+
 def write_markdown(rows: list[dict[str, Any]], path: Path) -> None:
     """Пишет summary.md: таблица, отсортированная по val macro AUROC, и оговорки."""
     ranked = sorted(rows, key=lambda r: r["val_macro_auroc"], reverse=True)
@@ -68,13 +88,14 @@ def write_markdown(rows: list[dict[str, Any]], path: Path) -> None:
         "",
         "## Основные метрики",
         "",
-        *table([("Запуск", "run"), ("Аугм.", "augment"), ("Параметров", "n_parameters"), ("Эпох (лучшая)", "epochs"),
+        *table([("Запуск", "run"), ("Отведений", "n_leads"), ("Аугм.", "augment"),("Параметров", "n_parameters"), ("Эпох (лучшая)", "epochs"),
                 ("Время, с", "time_sec"), ("macro AUROC", "val_macro_auroc"), ("macro PR-AUC", "val_macro_pr_auc")]),
         "",
         "## AUROC по классам",
         "",
         *table([("Запуск", "run")] + [(c, f"auroc_{c}") for c in CLASSES]),
         "",
+        *leads_section(ranked),
         "## Оговорки",
         "",
         "- Все числа — на **val (фолд 9)**; test (фолд 10) не использовался. Ранняя остановка и выбор эпохи идут по val,"

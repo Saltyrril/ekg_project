@@ -321,6 +321,20 @@ def load_splits(
     return data, meta
 
 
+def lead_indices(all_leads: list[str], selected: list[str] | str | None) -> list[int]:
+    """Индексы отведений по именам (регистр не важен). None / "all" -> все отведения в порядке кэша."""
+    if selected is None or selected == "all":
+        return list(range(len(all_leads)))
+    names = [s.upper() for s in selected]
+    pos = {n.upper(): i for i, n in enumerate(all_leads)}
+    missing = [s for s in names if s not in pos]
+    if missing:
+        raise ValueError(f"Нет отведений {missing}; доступны: {all_leads}")
+    if len(set(names)) != len(names):
+        raise ValueError(f"Отведения повторяются: {selected}")
+    return [pos[s] for s in names]
+
+
 def main() -> None:
     """CLI: собрать кэш и напечатать статистику."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
