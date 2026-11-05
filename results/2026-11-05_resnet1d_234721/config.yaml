@@ -1,0 +1,42 @@
+# ResNet1d (ResNet-18 для 1D) на PTB-XL, 100 Гц, вход (12, 1000). Запуск: python -m src.train --config configs/resnet1d.yaml
+seed: 42
+data_config: configs/data.yaml      # разбиение, классы, кэш сигналов (НЕ МЕНЯТЬ фолды)
+experiment_name: resnet1d
+output_root: results                # итог: results/<дата>_<experiment_name>/
+
+model:
+  name: resnet1d
+  params:
+    base_width: 32                  # каналы по ступеням: 32 / 64 / 128 / 256
+    layers: [2, 2, 2, 2]
+    kernel_size: 7
+    stem_kernel_size: 15
+    block_dropout: 0.1
+    head_dropout: 0.3
+    zero_init_residual: true
+
+train:
+  epochs: 40
+  batch_size: 128                   # замер (--probe-batch): пик 0.26 ГБ из 4; по скорости/запись почти плато
+  grad_accum_steps: 1               # эффективный батч = batch_size * grad_accum_steps
+  eval_batch_size: 256              # без градиентов памяти нужно мало
+  lr: 1.0e-3
+  min_lr: 1.0e-5                    # конец косинусного расписания
+  warmup_epochs: 1
+  weight_decay: 1.0e-2              # AdamW; не применяется к bias и BatchNorm
+  grad_clip: 1.0
+  amp_dtype: float16                # float16 (с GradScaler) | bfloat16
+  pos_weight: false                 # true -> BCE с весом положительных (N-P)/P; портит калибровку
+  early_stopping:
+    patience: 8                     # эпох без улучшения val macro AUROC
+    min_delta: 0.0005
+  probe_sizes: [32, 64, 128, 256, 512]   # для --probe-batch
+
+# Аугментации только для train (после z-нормализации; амплитуды в единицах std отведения).
+# enabled: false -> обучение идентично запуску без этой секции. p: 0 выключает отдельную аугментацию.
+augment:
+  enabled: false
+  time_shift: {p: 0.5, max_shift_sec: 0.5}            # сдвиг по времени ±0.5 с, края повторяются
+  amplitude: {p: 0.5, low: 0.8, high: 1.2, per_lead: false}   # масштаб амплитуды ×U(0.8, 1.2)
+  baseline_wander: {p: 0.5, max_amp: 0.3, freq_hz: [0.05, 0.5]}  # дрейф изолинии (дыхание)
+  noise: {p: 0.5, std: 0.05}                          # гауссов шум
