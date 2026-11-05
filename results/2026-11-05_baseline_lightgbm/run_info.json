@@ -1,0 +1,7 @@
+﻿{
+  "name": "baseline_lightgbm",
+  "date": "2026-11-05",
+  "source_run": "results/baseline/ (тот же прогон, копия)",
+  "code_commit": "f023fa5",
+  "note": "Прогон выполнен на 60b7b8e с незакоммиченными изменениями; код в них идентичен f023fa5. Время, seed и версии библиотек - в metrics.json (time_sec, seed, env). Метрики val (фолд 9); test не использовался."
+}
