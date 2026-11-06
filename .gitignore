@@ -22,3 +22,8 @@ __pycache__/
 venv/
 .ipynb_checkpoints/
 .pytest_cache/
+
+# Gradio-демо: пакет собирает scripts/export_app_bundle.py (веса, копия src/models.py, примеры из PTB-XL)
+app/model/
+app/examples/
+app/ecg_models.py

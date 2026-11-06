@@ -1,0 +1,17 @@
+# Сборка пакета Gradio-демо в app/ (веса, параметры предобработки, примеры).
+# Запуск: python scripts/export_app_bundle.py --config configs/app.yaml
+# Test (фолд 10) не читается: примеры и проверка воспроизведения только на val (фолд 9).
+seed: 42
+
+run: results/2026-11-06_cnn1d_aug    # лучшая модель по val (см. docs/decisions.md)
+out_dir: app
+
+ig_steps: 64                 # шагов Integrated Gradients, как в configs/explain.yaml
+
+examples:
+  per_class: 1               # случайные записи val с ровно одной меткой (не отбираются по качеству ответа)
+
+check:
+  n_records: 64              # случайных записей val: пайплайн приложения (wfdb -> нормализация -> модель)
+                             # должен воспроизводить val_probs.npy запуска
+  max_abs_diff: 0.02         # val_probs считались в fp16-autocast, приложение работает в fp32
