@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SPLITS: tuple[str, ...] = ("train", "val", "test")
-# Разбиение по правилам проекта; отклонение от него — повод для предупреждения.
+# Разбиение по правилам проекта; любое отклонение — ошибка (см. _validate_folds).
 CANONICAL_FOLDS: dict[str, list[int]] = {"train": list(range(1, 9)), "val": [9], "test": [10]}
 CACHE_VERSION = 1
 
@@ -55,7 +55,7 @@ def _resolve(path: str | Path) -> Path:
 
 
 def _validate_folds(folds: dict[str, list[int]]) -> None:
-    """Проверяет, что фолды не пересекаются; предупреждает об отличии от правил проекта."""
+    """Требует разбиение строго по правилам проекта (train 1-8, val 9, test 10), иначе ValueError."""
     seen: dict[int, str] = {}
     for split in SPLITS:
         for fold in folds[split]:
@@ -63,7 +63,10 @@ def _validate_folds(folds: dict[str, list[int]]) -> None:
                 raise ValueError(f"Фолд {fold} одновременно в '{seen[fold]}' и '{split}'")
             seen[fold] = split
     if {k: sorted(v) for k, v in folds.items()} != CANONICAL_FOLDS:
-        logger.warning("Разбиение отличается от правил проекта (train 1-8, val 9, test 10): %s", folds)
+        raise ValueError(
+            f"Разбиение отличается от правил проекта (train 1-8, val 9, test 10): {folds}. "
+            f"Другое разбиение сломает сравнимость с прошлыми запусками и может пустить test в обучение."
+        )
 
 
 def _fingerprint(cfg: dict[str, Any]) -> str:
