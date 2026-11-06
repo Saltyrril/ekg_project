@@ -43,11 +43,12 @@ def _git_state() -> dict[str, Any]:
 def fit_ovr(
     X_tr: np.ndarray, y_tr: np.ndarray, X_va: np.ndarray, y_va: np.ndarray,
     classes: list[str], names: list[str], lgb_cfg: dict[str, Any], seed: int,
-) -> tuple[np.ndarray, dict[str, int], dict[str, list[tuple[str, float]]]]:
-    """Один бинарный LightGBM на класс. Возвращает скоры val, best_iteration и топ-признаки по gain."""
+) -> tuple[np.ndarray, dict[str, int], dict[str, list[tuple[str, float]]], list[lgb.LGBMClassifier]]:
+    """Один бинарный LightGBM на класс. Возвращает скоры val, best_iteration, топ-признаки по gain и модели."""
     scores = np.zeros(y_va.shape, dtype=np.float64)
     best_iter: dict[str, int] = {}
     top: dict[str, list[tuple[str, float]]] = {}
+    models: list[lgb.LGBMClassifier] = []
     for i, c in enumerate(classes):
         model = lgb.LGBMClassifier(**lgb_cfg["params"], random_state=seed, importance_type="gain")
         model.fit(
@@ -59,7 +60,25 @@ def fit_ovr(
         best_iter[c] = int(model.best_iteration_)
         order = np.argsort(model.feature_importances_)[::-1][:10]
         top[c] = [(names[j], round(float(model.feature_importances_[j]), 1)) for j in order]
-    return scores, best_iter, top
+        models.append(model)
+    return scores, best_iter, top, models
+
+
+def select_variants(
+    cov_tr: dict[str, float], names: list[str], n_leads: int, min_coverage: float
+) -> tuple[dict[str, list[int]], list[str]]:
+    """Наборы столбцов: stats_only и (если есть устойчивые ритм-признаки) stats_plus_neurokit.
+
+    Устойчивость ритм-признака — доля валидных значений на TRAIN не ниже min_coverage. Возвращает (варианты, отброшенные).
+    """
+    n_stat = n_leads * len(STAT_NAMES)
+    stat_cols = list(range(n_stat))
+    rhythm_cols = [j for j in range(n_stat, len(names)) if cov_tr[names[j]] >= min_coverage]
+    dropped = [names[j] for j in range(n_stat, len(names)) if j not in rhythm_cols]
+    variants: dict[str, list[int]] = {"stats_only": stat_cols}
+    if rhythm_cols:
+        variants["stats_plus_neurokit"] = stat_cols + rhythm_cols
+    return variants, dropped
 
 
 def main() -> None:
@@ -96,21 +115,16 @@ def main() -> None:
     # Устойчивость: покрытие считаем по train (метки и val не участвуют в отборе).
     cov_tr, cov_va = coverage(F_tr, names), coverage(F_va, names)
     n_stat = len(leads) * len(STAT_NAMES)
-    stat_cols = list(range(n_stat))
-    rhythm_cols = [j for j in range(n_stat, len(names)) if cov_tr[names[j]] >= cfg["features"]["min_coverage"]]
-    dropped = [names[j] for j in range(n_stat, len(names)) if j not in rhythm_cols]
+    variants, dropped = select_variants(cov_tr, names, len(leads), cfg["features"]["min_coverage"])
     logger.info("ритм-признаков оставлено %d, отброшено (покрытие < %.0f%% на train): %s",
-                len(rhythm_cols), 100 * cfg["features"]["min_coverage"], dropped)
+                len(names) - n_stat - len(dropped), 100 * cfg["features"]["min_coverage"], dropped)
 
-    variants: dict[str, list[int]] = {"stats_only": stat_cols}
-    if rhythm_cols:
-        variants["stats_plus_neurokit"] = stat_cols + rhythm_cols
     results: dict[str, Any] = {}
     t_fit0 = time.perf_counter()
     for vname, cols in variants.items():
         vnames = [names[j] for j in cols]
         logger.info("[%s] %d признаков, обучаю %d моделей...", vname, len(cols), len(classes))
-        scores, best_iter, top = fit_ovr(
+        scores, best_iter, top, _ = fit_ovr(
             F_tr[:, cols], tr.y, F_va[:, cols], va.y, classes, vnames, cfg["lightgbm"], seed
         )
         m = multilabel_metrics(va.y, scores, classes)
