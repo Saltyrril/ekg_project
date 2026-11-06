@@ -42,7 +42,12 @@ Train — фолды 1–8, val — фолд 9 (выбор модели, early s
 Кэш данных сверен с CSV PTB-XL (`scripts/verify_cache.py`, `results/final/cache_check.json`). Все метрики и примечания — в `results/final/table.md`
 и `results/final/metrics.json`. Воспроизвести: `python -m src.final_eval` (повторный запуск в ту же папку запрещён).
 
-## Демо (Gradio, Hugging Face Spaces)
+## Демо
+Статическая страница с пятью заранее посчитанными примерами из val (фолд 9), без весов и сырых сигналов:
+[saltyrril.github.io/ekg_project/demo](https://saltyrril.github.io/ekg_project/demo/) (папка `docs/demo/`,
+собирается `python scripts/export_static_demo.py --config configs/static_demo.yaml`, нужен собранный `app/model`).
+
+### Gradio, Hugging Face Spaces
 Папка `app/` служит корнем Space: `app.py` (интерфейс), `inference.py` (предобработка, модель, Integrated Gradients),
 `README.md` (метаданные Space), `requirements.txt` (CPU-torch, gradio). Веса и примеры в git не хранятся, их собирает скрипт.
 Он же проверяет, что приложение воспроизводит `val_probs.npy` запуска (только val, test не читается):

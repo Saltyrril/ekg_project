@@ -1,0 +1,14 @@
+# Статическая демо-страница (GitHub Pages): заранее посчитанные примеры, без весов и сырых сигналов.
+# Запуск: .venv\Scripts\python.exe scripts\export_static_demo.py --config configs\static_demo.yaml
+# Test (фолд 10) не читается: примеры только из валидационного фолда 9.
+seed: 42
+fold: 9                      # только val; любое другое значение — ошибка
+n_per_class: 1               # случайные одно-меточные записи, верно найденные моделью (вероятность класса выше порога)
+ig_steps: 64                 # шагов Integrated Gradients, как в configs/explain.yaml
+output_dir: docs/demo
+final_metrics: results/final/metrics.json   # уже опубликованные тестовые метрики (только чтение)
+
+run: results/2026-11-06_cnn1d_aug           # val_probs.npy и postprocess.json (T и пороги с val)
+model_dir: app/model                        # пакет scripts/export_app_bundle.py (в git не хранится)
+max_abs_diff: 0.02           # пересчёт в fp32 против val_probs.npy (fp16-autocast)
+max_output_mb: 20

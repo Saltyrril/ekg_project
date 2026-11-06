@@ -1,0 +1,81 @@
+{
+  "config": {
+    "seed": 42,
+    "fold": 9,
+    "n_per_class": 1,
+    "ig_steps": 64,
+    "output_dir": "docs/demo",
+    "final_metrics": "results/final/metrics.json",
+    "run": "results/2026-11-06_cnn1d_aug",
+    "model_dir": "app/model",
+    "max_abs_diff": 0.02,
+    "max_output_mb": 20
+  },
+  "model_run": "2026-11-06_cnn1d_aug",
+  "created": "2026-11-06 03:53:33",
+  "git": {
+    "commit": "089b143",
+    "dirty": true
+  },
+  "examples": [
+    {
+      "dir": "NORM_1453",
+      "target_class": "NORM",
+      "ecg_id": 1453,
+      "strat_fold": 9,
+      "labels": [
+        "NORM"
+      ],
+      "max_abs_diff": 0.0001538991928100586
+    },
+    {
+      "dir": "MI_17787",
+      "target_class": "MI",
+      "ecg_id": 17787,
+      "strat_fold": 9,
+      "labels": [
+        "MI"
+      ],
+      "max_abs_diff": 0.00012540817260742188
+    },
+    {
+      "dir": "STTC_14522",
+      "target_class": "STTC",
+      "ecg_id": 14522,
+      "strat_fold": 9,
+      "labels": [
+        "STTC"
+      ],
+      "max_abs_diff": 0.0003241300582885742
+    },
+    {
+      "dir": "CD_8863",
+      "target_class": "CD",
+      "ecg_id": 8863,
+      "strat_fold": 9,
+      "labels": [
+        "CD"
+      ],
+      "max_abs_diff": 0.00033724308013916016
+    },
+    {
+      "dir": "HYP_8912",
+      "target_class": "HYP",
+      "ecg_id": 8912,
+      "strat_fold": 9,
+      "labels": [
+        "HYP"
+      ],
+      "max_abs_diff": 0.0003491640090942383
+    }
+  ],
+  "selection": "по 1 случайной записи на класс (seed 42) из фолда 9: одна метка, вероятность класса по val_probs.npy после T выше порога с val",
+  "env": {
+    "python": "3.13.0",
+    "numpy": "2.5.4",
+    "torch": "2.14.1+cu126",
+    "matplotlib": "3.11.2"
+  },
+  "output_size_mb": 1.86,
+  "time_sec": 27.6
+}
