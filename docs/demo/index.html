@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ЭКГ PTB-XL: демо</title>
+<meta name="description" content="Исследовательский прототип: multi-label классификация 12-канальной ЭКГ PTB-XL по 5 суперклассам. Не медицинский инструмент.">
+<style>
+:root { --bg: #ffffff; --fg: #1d1d1f; --muted: #5f6368; --line: #dadce0; --card: #f8f9fa; --hit: #fff4d6;
+        --warn-bg: #fff4e5; --warn-fg: #4a2400; --warn-line: #b54708; --warn-title: #8a3200; --link: #0b57d0; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #121314; --fg: #e8eaed; --muted: #9aa0a6; --line: #3c4043; --card: #1e1f21; --hit: #3a3218;
+          --warn-bg: #3a2410; --warn-fg: #ffe1c2; --warn-line: #f0883e; --warn-title: #ffb37a; --link: #8ab4f8; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--fg);
+       font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; }
+main { max-width: 1040px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 1.7rem; line-height: 1.25; margin: 28px 0 8px; }
+h2 { font-size: 1.3rem; margin: 40px 0 10px; padding-top: 8px; border-top: 1px solid var(--line); }
+h3 { font-size: 1.1rem; margin: 22px 0 8px; }
+a { color: var(--link); }
+code { font-size: 0.88em; overflow-wrap: anywhere; }
+.lead { color: var(--muted); margin-top: 0; }
+.disclaimer { border: 2px solid var(--warn-line); background: var(--warn-bg); color: var(--warn-fg);
+              border-radius: 10px; padding: 14px 18px; line-height: 1.45; }
+.disclaimer-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; color: var(--warn-title); }
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; font-variant-numeric: tabular-nums; }
+th, td { border-bottom: 1px solid var(--line); padding: 6px 10px; text-align: left; white-space: nowrap; }
+th { font-weight: 600; }
+tr.hit td { background: var(--hit); }
+.ci { color: var(--muted); font-size: 0.9em; }
+.example { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 4px 18px 14px; margin: 18px 0; }
+.meta, .note { font-size: 0.93rem; }
+.note { color: var(--muted); }
+figure { margin: 14px 0 0; }
+figure img { width: 100%; height: auto; display: block; background: #fff; border-radius: 6px; }
+figcaption { font-size: 0.88rem; color: var(--muted); margin-top: 4px; }
+ul { padding-left: 1.3em; }
+footer { margin-top: 40px; font-size: 0.9rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+<div class="disclaimer" role="note">
+  <div class="disclaimer-title">⚠ Исследовательский прототип, не медицинский инструмент</div>
+  Модель обучена на одном открытом датасете (PTB-XL) и не проходила клинической проверки. Её ответы нельзя использовать
+  для диагностики, лечения или любых решений о здоровье. Если вас беспокоит ЭКГ, обратитесь к врачу.
+</div>
+
+<h1>Классификация 12-канальной ЭКГ (PTB-XL, 5 суперклассов)</h1>
+<p class="lead">Статическая страница с пятью заранее посчитанными примерами. Ничего не загружается и не вычисляется
+в браузере. Код и подробности: <a href="https://github.com/Saltyrril/ekg_project">репозиторий проекта</a>.</p>
+
+<h2>Как это устроено</h2>
+<p><b>Задача.</b> По 10-секундной записи 12-канальной ЭКГ (100 Гц) модель оценивает вероятность каждого из пяти
+диагностических суперклассов. Классы не исключают друг друга (multi-label): у записи может быть несколько меток.</p>
+<ul><li><b>NORM — норма</b></li><li><b>MI — инфаркт миокарда</b></li><li><b>STTC — изменения ST/T</b></li><li><b>CD — нарушения проводимости</b></li><li><b>HYP — гипертрофия</b></li></ul>
+<p><b>Данные.</b> <a href="https://physionet.org/content/ptb-xl/">PTB-XL</a> (Wagner et al., 2020, <i>Scientific Data</i>; PhysioNet,
+лицензия CC BY 4.0). Стандартное разбиение по <code>strat_fold</code>: обучение на фолдах 1–8, выбор модели,
+температура и пороги на фолде 9 (val), финальная оценка один раз на фолде 10 (test). Записи без диагностического
+суперкласса исключены (train 334, val 37, test 40).</p>
+<p><b>Модель.</b> Одномерная свёрточная сеть (<code>2026-11-06_cnn1d_aug</code>) с аугментациями,
+вход — все 12 отведений, z-нормализация статистиками train. Вероятности откалиброваны температурным шкалированием,
+пороги классов подобраны на val.</p>
+
+<h2>Качество на тесте</h2>
+<p>Фолд 10, 2158 записей, 1877 пациентов. В скобках 95% доверительный интервал
+(перцентильный бутстреп по пациентам, 2000 реплик, парный для разницы).
+Пороги и температура взяты с val без пересчёта.</p>
+<div class="table-wrap"><table><tr><th>Метрика</th><th>CNN 1D (модель)</th><th>LightGBM (бейзлайн)</th><th>Разница</th></tr><tr><td>macro AUROC</td><td>0.922 <span class="ci">[0.914; 0.929]</span></td><td>0.880 <span class="ci">[0.871; 0.889]</span></td><td>0.042 <span class="ci">[0.035; 0.049]</span></td></tr><tr><td>macro F1 (пороги с val)</td><td>0.743 <span class="ci">[0.727; 0.757]</span></td><td>0.666 <span class="ci">[0.649; 0.681]</span></td><td>0.076 <span class="ci">[0.063; 0.091]</span></td></tr><tr><td>macro PR-AUC</td><td>0.811 <span class="ci">[0.794; 0.827]</span></td><td>0.739 <span class="ci">[0.719; 0.757]</span></td><td>0.073 <span class="ci">[0.058; 0.087]</span></td></tr></table></div><h3>AUROC по классам</h3><div class="table-wrap"><table><tr><th>Класс</th><th>AUROC CNN 1D</th><th>AUROC LightGBM</th><th>Разница</th></tr><tr><td>NORM</td><td>0.941 <span class="ci">[0.931; 0.950]</span></td><td>0.904 <span class="ci">[0.890; 0.916]</span></td><td>0.037 <span class="ci">[0.028; 0.047]</span></td></tr><tr><td>MI</td><td>0.923 <span class="ci">[0.910; 0.934]</span></td><td>0.848 <span class="ci">[0.828; 0.865]</span></td><td>0.075 <span class="ci">[0.060; 0.092]</span></td></tr><tr><td>STTC</td><td>0.934 <span class="ci">[0.922; 0.945]</span></td><td>0.898 <span class="ci">[0.882; 0.912]</span></td><td>0.036 <span class="ci">[0.026; 0.048]</span></td></tr><tr><td>CD</td><td>0.913 <span class="ci">[0.894; 0.929]</span></td><td>0.866 <span class="ci">[0.844; 0.887]</span></td><td>0.047 <span class="ci">[0.031; 0.062]</span></td></tr><tr><td>HYP</td><td>0.899 <span class="ci">[0.879; 0.917]</span></td><td>0.886 <span class="ci">[0.862; 0.907]</span></td><td>0.013 <span class="ci">[-0.001; 0.028]</span></td></tr></table></div>
+
+<h2>Примеры</h2>
+<p>По одной случайной записи на класс (seed 42) из валидационного фолда 9:
+у записи ровно одна метка, и модель нашла этот класс (вероятность выше порога). Записи не отбирались вручную, но
+<b>отбор среди верно найденных означает, что ошибок модели здесь нет</b>; они есть в метриках выше.
+Переход к примеру: <a href="#NORM_1453">NORM</a> · <a href="#MI_17787">MI</a> · <a href="#STTC_14522">STTC</a> · <a href="#CD_8863">CD</a> · <a href="#HYP_8912">HYP</a>.</p>
+
+<section class="example" id="NORM_1453">
+  <h3>NORM — норма · ecg_id 1453</h3>
+  <p class="meta">Разметка PTB-XL: <b>NORM — норма</b>;
+  коды SCP: <code>NORM:80, SR:0</code>. Запись взята из <b>валидационного фолда 9</b>:
+  на нём подбирались температура и пороги, поэтому это демонстрация работы модели, а не оценка качества.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Класс</th><th>Вероятность</th><th>Порог (с val)</th><th>Ответ модели</th></tr>
+    <tr class="hit"><td>NORM — норма</td><td>0.782</td><td>0.387</td><td><b>выше порога</b></td></tr><tr><td>MI — инфаркт миокарда</td><td>0.009</td><td>0.229</td><td>ниже порога</td></tr><tr><td>STTC — изменения ST/T</td><td>0.098</td><td>0.502</td><td>ниже порога</td></tr><tr><td>CD — нарушения проводимости</td><td>0.177</td><td>0.410</td><td>ниже порога</td></tr><tr><td>HYP — гипертрофия</td><td>0.071</td><td>0.451</td><td>ниже порога</td></tr>
+  </table></div>
+  <p class="note">Вероятности после температурного шкалирования (T = 1.473, подобрана на val).
+  Классы не исключают друг друга, сумма не обязана быть 1.</p>
+  <figure>
+    <img src="examples/NORM_1453/ecg.png" alt="12 отведений ЭКГ, ecg_id 1453" loading="lazy">
+    <figcaption>12 отведений, 100 Гц, 10 с. Сетка 0.2 с × 0.5 мВ.</figcaption>
+  </figure>
+  <figure>
+    <img src="examples/NORM_1453/ig_NORM.png" alt="Карта Integrated Gradients для класса NORM — норма" loading="lazy">
+    <figcaption>Integrated Gradients по логиту класса NORM — норма: красный фон повышает логит, синий понижает.
+    Карта показывает, к чему чувствительна модель, <b>а не причину диагноза</b>.</figcaption>
+  </figure>
+</section>
+<section class="example" id="MI_17787">
+  <h3>MI — инфаркт миокарда · ecg_id 17787</h3>
+  <p class="meta">Разметка PTB-XL: <b>MI — инфаркт миокарда</b>;
+  коды SCP: <code>ASMI:50, IMI:100, SR:0</code>. Запись взята из <b>валидационного фолда 9</b>:
+  на нём подбирались температура и пороги, поэтому это демонстрация работы модели, а не оценка качества.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Класс</th><th>Вероятность</th><th>Порог (с val)</th><th>Ответ модели</th></tr>
+    <tr><td>NORM — норма</td><td>0.055</td><td>0.387</td><td>ниже порога</td></tr><tr class="hit"><td>MI — инфаркт миокарда</td><td>0.757</td><td>0.229</td><td><b>выше порога</b></td></tr><tr><td>STTC — изменения ST/T</td><td>0.069</td><td>0.502</td><td>ниже порога</td></tr><tr><td>CD — нарушения проводимости</td><td>0.065</td><td>0.410</td><td>ниже порога</td></tr><tr><td>HYP — гипертрофия</td><td>0.152</td><td>0.451</td><td>ниже порога</td></tr>
+  </table></div>
+  <p class="note">Вероятности после температурного шкалирования (T = 1.473, подобрана на val).
+  Классы не исключают друг друга, сумма не обязана быть 1.</p>
+  <figure>
+    <img src="examples/MI_17787/ecg.png" alt="12 отведений ЭКГ, ecg_id 17787" loading="lazy">
+    <figcaption>12 отведений, 100 Гц, 10 с. Сетка 0.2 с × 0.5 мВ.</figcaption>
+  </figure>
+  <figure>
+    <img src="examples/MI_17787/ig_MI.png" alt="Карта Integrated Gradients для класса MI — инфаркт миокарда" loading="lazy">
+    <figcaption>Integrated Gradients по логиту класса MI — инфаркт миокарда: красный фон повышает логит, синий понижает.
+    Карта показывает, к чему чувствительна модель, <b>а не причину диагноза</b>.</figcaption>
+  </figure>
+</section>
+<section class="example" id="STTC_14522">
+  <h3>STTC — изменения ST/T · ecg_id 14522</h3>
+  <p class="meta">Разметка PTB-XL: <b>STTC — изменения ST/T</b>;
+  коды SCP: <code>NDT:100, EL:50, LOWT:0, INVT:0, SR:0</code>. Запись взята из <b>валидационного фолда 9</b>:
+  на нём подбирались температура и пороги, поэтому это демонстрация работы модели, а не оценка качества.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Класс</th><th>Вероятность</th><th>Порог (с val)</th><th>Ответ модели</th></tr>
+    <tr><td>NORM — норма</td><td>0.019</td><td>0.387</td><td>ниже порога</td></tr><tr><td>MI — инфаркт миокарда</td><td>0.052</td><td>0.229</td><td>ниже порога</td></tr><tr class="hit"><td>STTC — изменения ST/T</td><td>0.950</td><td>0.502</td><td><b>выше порога</b></td></tr><tr><td>CD — нарушения проводимости</td><td>0.091</td><td>0.410</td><td>ниже порога</td></tr><tr class="hit"><td>HYP — гипертрофия</td><td>0.707</td><td>0.451</td><td><b>выше порога</b></td></tr>
+  </table></div>
+  <p class="note">Вероятности после температурного шкалирования (T = 1.473, подобрана на val).
+  Классы не исключают друг друга, сумма не обязана быть 1.</p>
+  <figure>
+    <img src="examples/STTC_14522/ecg.png" alt="12 отведений ЭКГ, ecg_id 14522" loading="lazy">
+    <figcaption>12 отведений, 100 Гц, 10 с. Сетка 0.2 с × 0.5 мВ.</figcaption>
+  </figure>
+  <figure>
+    <img src="examples/STTC_14522/ig_STTC.png" alt="Карта Integrated Gradients для класса STTC — изменения ST/T" loading="lazy">
+    <figcaption>Integrated Gradients по логиту класса STTC — изменения ST/T: красный фон повышает логит, синий понижает.
+    Карта показывает, к чему чувствительна модель, <b>а не причину диагноза</b>.</figcaption>
+  </figure>
+</section>
+<section class="example" id="CD_8863">
+  <h3>CD — нарушения проводимости · ecg_id 8863</h3>
+  <p class="meta">Разметка PTB-XL: <b>CD — нарушения проводимости</b>;
+  коды SCP: <code>CRBBB:100, SBRAD:0</code>. Запись взята из <b>валидационного фолда 9</b>:
+  на нём подбирались температура и пороги, поэтому это демонстрация работы модели, а не оценка качества.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Класс</th><th>Вероятность</th><th>Порог (с val)</th><th>Ответ модели</th></tr>
+    <tr><td>NORM — норма</td><td>0.002</td><td>0.387</td><td>ниже порога</td></tr><tr><td>MI — инфаркт миокарда</td><td>0.094</td><td>0.229</td><td>ниже порога</td></tr><tr><td>STTC — изменения ST/T</td><td>0.233</td><td>0.502</td><td>ниже порога</td></tr><tr class="hit"><td>CD — нарушения проводимости</td><td>0.999</td><td>0.410</td><td><b>выше порога</b></td></tr><tr><td>HYP — гипертрофия</td><td>0.385</td><td>0.451</td><td>ниже порога</td></tr>
+  </table></div>
+  <p class="note">Вероятности после температурного шкалирования (T = 1.473, подобрана на val).
+  Классы не исключают друг друга, сумма не обязана быть 1.</p>
+  <figure>
+    <img src="examples/CD_8863/ecg.png" alt="12 отведений ЭКГ, ecg_id 8863" loading="lazy">
+    <figcaption>12 отведений, 100 Гц, 10 с. Сетка 0.2 с × 0.5 мВ.</figcaption>
+  </figure>
+  <figure>
+    <img src="examples/CD_8863/ig_CD.png" alt="Карта Integrated Gradients для класса CD — нарушения проводимости" loading="lazy">
+    <figcaption>Integrated Gradients по логиту класса CD — нарушения проводимости: красный фон повышает логит, синий понижает.
+    Карта показывает, к чему чувствительна модель, <b>а не причину диагноза</b>.</figcaption>
+  </figure>
+</section>
+<section class="example" id="HYP_8912">
+  <h3>HYP — гипертрофия · ecg_id 8912</h3>
+  <p class="meta">Разметка PTB-XL: <b>HYP — гипертрофия</b>;
+  коды SCP: <code>LVH:35, VCLVH:0, SR:0</code>. Запись взята из <b>валидационного фолда 9</b>:
+  на нём подбирались температура и пороги, поэтому это демонстрация работы модели, а не оценка качества.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Класс</th><th>Вероятность</th><th>Порог (с val)</th><th>Ответ модели</th></tr>
+    <tr class="hit"><td>NORM — норма</td><td>0.460</td><td>0.387</td><td><b>выше порога</b></td></tr><tr><td>MI — инфаркт миокарда</td><td>0.001</td><td>0.229</td><td>ниже порога</td></tr><tr><td>STTC — изменения ST/T</td><td>0.039</td><td>0.502</td><td>ниже порога</td></tr><tr><td>CD — нарушения проводимости</td><td>0.013</td><td>0.410</td><td>ниже порога</td></tr><tr class="hit"><td>HYP — гипертрофия</td><td>0.637</td><td>0.451</td><td><b>выше порога</b></td></tr>
+  </table></div>
+  <p class="note">Вероятности после температурного шкалирования (T = 1.473, подобрана на val).
+  Классы не исключают друг друга, сумма не обязана быть 1.</p>
+  <figure>
+    <img src="examples/HYP_8912/ecg.png" alt="12 отведений ЭКГ, ecg_id 8912" loading="lazy">
+    <figcaption>12 отведений, 100 Гц, 10 с. Сетка 0.2 с × 0.5 мВ.</figcaption>
+  </figure>
+  <figure>
+    <img src="examples/HYP_8912/ig_HYP.png" alt="Карта Integrated Gradients для класса HYP — гипертрофия" loading="lazy">
+    <figcaption>Integrated Gradients по логиту класса HYP — гипертрофия: красный фон повышает логит, синий понижает.
+    Карта показывает, к чему чувствительна модель, <b>а не причину диагноза</b>.</figcaption>
+  </figure>
+</section>
+
+<h2>Ограничения</h2>
+<ul>
+  <li><b>Один seed.</b> Модель обучена один раз; разброс качества между повторными обучениями не оценивался,
+  доверительные интервалы отражают только конечность тестовой выборки.</li>
+  <li><b>Оценка на val оптимистична.</b> На фолде 9 выбирались модель, эпоха, температура и пороги, поэтому
+  вероятности и решения на примерах выше выглядят лучше, чем на новых данных. Честная оценка — только тестовые метрики.</li>
+  <li><b>Карта значимости — не объяснение.</b> Integrated Gradients показывает чувствительность логита модели к отсчётам
+  сигнала относительно «нулевой» ЭКГ (среднего по train). Это не причина диагноза и не разметка патологии: модель может
+  опираться на признаки, которые врач счёл бы неважными.</li>
+  <li><b>HYP без преимущества над LightGBM.</b> Для гипертрофии разница AUROC с бейзлайном
+  +0.013 [-0.001; +0.028], интервал включает ноль.</li>
+  <li><b>Один датасет.</b> Внешней проверки на других больницах, аппаратах и популяциях не было; 100 Гц теряют
+  часть деталей формы комплексов.</li>
+</ul>
+
+<footer>
+<div class="disclaimer" role="note">
+  <div class="disclaimer-title">⚠ Исследовательский прототип, не медицинский инструмент</div>
+  Модель обучена на одном открытом датасете (PTB-XL) и не проходила клинической проверки. Её ответы нельзя использовать
+  для диагностики, лечения или любых решений о здоровье. Если вас беспокоит ЭКГ, обратитесь к врачу.
+</div>
+<p>Данные: PTB-XL, PhysioNet, CC BY 4.0. Страница сгенерирована <code>scripts/export_static_demo.py</code>
+(2026-11-06 03:53:33, git 089b143). Веса модели и сырые
+сигналы здесь не публикуются.</p>
+</footer>
+</main>
+</body>
+</html>
