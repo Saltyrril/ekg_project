@@ -1,6 +1,7 @@
 """Собирает results/experiments.csv и results/summary.md из metrics.json всех запусков.
 
-Берутся папки results/<дата>_<имя>/ (копия results/baseline/ пропускается). Только val-метрики (фолд 9).
+Берутся папки results/<дата>_<имя>/ (копия results/baseline/ пропускается). Только val-метрики (фолд 9);
+финальная оценка на test (results/<дата>_final_eval/, eval_split = test) пропускается — её итог в results/final/.
 Запуск:  python scripts/summarize_results.py
 """
 from __future__ import annotations
@@ -19,6 +20,8 @@ def load_runs() -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for path in sorted(RESULTS.glob("20*/metrics.json")):
         m = json.loads(path.read_text(encoding="utf-8"))
+        if m.get("eval_split") == "test":  # финальная оценка на test — не val-запуск, в сводку по val не входит
+            continue
         val = m["val"]
         setup = m.get("train_setup", {})
         git = m.get("env", {}).get("git", {})

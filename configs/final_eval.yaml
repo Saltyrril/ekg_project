@@ -1,0 +1,23 @@
+# ФИНАЛЬНАЯ оценка на test (strat_fold 10): один прогон, ничего не подбирается.
+# Проверка конвейера без test:  python -m src.final_eval --dry-run      (оценивает на val, пишет в dry_run_dir)
+# Единственный боевой прогон:    python -m src.final_eval                (пишет в output_dir; повторно не запускается)
+seed: 42
+data_config: configs/data.yaml
+evaluate_config: configs/evaluate.yaml      # probs_eps, бины ECE и процедура подбора T/порогов (для бейзлайна, на val)
+
+model:
+  run: results/2026-11-06_cnn1d_aug         # лучшая модель по val; best.pt + postprocess.json (T и пороги с val)
+  repro_max_abs_diff: 1.0e-3                # best.pt обязан воспроизвести сохранённый val_probs.npy, иначе стоп до test
+
+baseline:
+  config: configs/baseline.yaml             # LightGBM не сохранялся: переобучается на train тем же кодом и seed
+  reference_metrics: results/2026-11-05_baseline_lightgbm/metrics.json
+  repro_max_abs_diff_auroc: 1.0e-6          # val macro AUROC переобученного бейзлайна = записанному, иначе стоп до test
+
+bootstrap:
+  n_boot: 2000              # реплик; единица повторной выборки — пациент (все его записи вместе)
+  level: 0.95               # перцентильный интервал
+  min_valid_share: 0.99     # метрика без ДИ, если определена (оба класса в реплике) в меньшей доле реплик
+
+output_dir: results/final
+dry_run_dir: tmp/final_dryrun
