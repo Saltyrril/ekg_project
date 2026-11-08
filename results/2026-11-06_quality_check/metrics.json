@@ -1,0 +1,640 @@
+{
+  "n_records": 2146,
+  "thresholds": {
+    "flat_p2p_mv": 0.05,
+    "flat_run_warn": 0.15,
+    "flat_run_poor": 0.4,
+    "hf_warn": 0.1,
+    "hf_poor": 0.12,
+    "bw_warn": 1.5,
+    "bw_poor": 2.5,
+    "min_qrs_contrast": 3.0,
+    "max_p2p_mv": 12.0,
+    "median_p2p_mv": 0.15,
+    "min_beats": 2,
+    "hr_min": 30.0,
+    "hr_max": 220.0,
+    "einthoven_warn": 0.3,
+    "poor_noisy_leads": 6
+  },
+  "clean": {
+    "n": 2146,
+    "status": {
+      "ok": 0.8890959925442684,
+      "warning": 0.11043802423112768,
+      "poor": 0.00046598322460391424
+    },
+    "flagged_any": 0.11090400745573159,
+    "issue_rates": {
+      "baseline_wander:warning": 0.0983224603914259,
+      "heart_rate:warning": 0.0009319664492078285,
+      "hf_noise:warning": 0.014445479962721343,
+      "no_qrs:poor": 0.00046598322460391424
+    },
+    "code_rates": {
+      "baseline_wander": 0.0983224603914259,
+      "heart_rate": 0.0009319664492078285,
+      "hf_noise": 0.014445479962721343,
+      "no_qrs": 0.00046598322460391424
+    }
+  },
+  "clean_metric_percentiles_max_over_leads": {
+    "hf_noise": {
+      "p50": 0.0341108622266217,
+      "p95": 0.07187501331352936,
+      "p99": 0.10366744698765369,
+      "p99.9": 0.16794614532123636,
+      "p100": 0.2097901651540446
+    },
+    "baseline_wander": {
+      "p50": 0.45492888714096025,
+      "p95": 2.167141669623084,
+      "p99": 4.738179403221174,
+      "p99.9": 9.112089901421218,
+      "p100": 18.15204481481501
+    },
+    "flat_run": {
+      "p50": 0.0,
+      "p95": 0.0,
+      "p99": 0.0,
+      "p99.9": 0.04056500000000006,
+      "p100": 0.042
+    }
+  },
+  "vs_ptbxl_annotations": {
+    "baseline_drift": {
+      "n_annotated": 226,
+      "flagged_if_annotated": 0.336283185840708,
+      "flagged_if_not_annotated": 0.084375,
+      "poor_if_annotated": 0.004424778761061947
+    },
+    "static_noise": {
+      "n_annotated": 321,
+      "flagged_if_annotated": 0.04361370716510903,
+      "flagged_if_not_annotated": 0.12273972602739726,
+      "poor_if_annotated": 0.0
+    },
+    "burst_noise": {
+      "n_annotated": 47,
+      "flagged_if_annotated": 0.14893617021276595,
+      "flagged_if_not_annotated": 0.11005240590757503,
+      "poor_if_annotated": 0.0
+    },
+    "electrodes_problems": {
+      "n_annotated": 4,
+      "flagged_if_annotated": 0.0,
+      "flagged_if_not_annotated": 0.1111111111111111,
+      "poor_if_annotated": 0.0
+    }
+  },
+  "auroc_clean": 0.9276948928598412,
+  "sweeps": {
+    "white_noise": [
+      {
+        "level": 0.0,
+        "macro_auroc": 0.9276948928598412,
+        "n": 2146,
+        "status": {
+          "ok": 0.8890959925442684,
+          "warning": 0.11043802423112768,
+          "poor": 0.00046598322460391424
+        },
+        "flagged_any": 0.11090400745573159,
+        "issue_rates": {
+          "baseline_wander:warning": 0.0983224603914259,
+          "heart_rate:warning": 0.0009319664492078285,
+          "hf_noise:warning": 0.014445479962721343,
+          "no_qrs:poor": 0.00046598322460391424
+        },
+        "code_rates": {
+          "baseline_wander": 0.0983224603914259,
+          "heart_rate": 0.0009319664492078285,
+          "hf_noise": 0.014445479962721343,
+          "no_qrs": 0.00046598322460391424
+        }
+      },
+      {
+        "level": 0.05,
+        "macro_auroc": 0.9230180900472753,
+        "n": 2146,
+        "status": {
+          "ok": 0.0,
+          "warning": 0.9990680335507922,
+          "poor": 0.0009319664492078285
+        },
+        "flagged_any": 1.0,
+        "issue_rates": {
+          "amplitude_high:poor": 0.00046598322460391424,
+          "baseline_wander:warning": 0.09226467847157502,
+          "einthoven:warning": 0.9995340167753961,
+          "heart_rate:warning": 0.0013979496738117428,
+          "hf_noise:warning": 0.21015843429636533,
+          "no_qrs:poor": 0.00046598322460391424
+        },
+        "code_rates": {
+          "amplitude_high": 0.00046598322460391424,
+          "baseline_wander": 0.09226467847157502,
+          "einthoven": 0.9995340167753961,
+          "heart_rate": 0.0013979496738117428,
+          "hf_noise": 0.21015843429636533,
+          "no_qrs": 0.00046598322460391424
+        }
+      },
+      {
+        "level": 0.1,
+        "macro_auroc": 0.9066094162290611,
+        "n": 2146,
+        "status": {
+          "ok": 0.0,
+          "warning": 0.9958061509785647,
+          "poor": 0.004193849021435228
+        },
+        "flagged_any": 1.0,
+        "issue_rates": {
+          "amplitude_high:poor": 0.001863932898415657,
+          "baseline_wander:warning": 0.08620689655172414,
+          "einthoven:warning": 1.0,
+          "heart_rate:warning": 0.00046598322460391424,
+          "hf_noise:warning": 0.7926374650512582,
+          "no_qrs:poor": 0.001863932898415657,
+          "widespread_noise:poor": 0.0009319664492078285
+        },
+        "code_rates": {
+          "amplitude_high": 0.001863932898415657,
+          "baseline_wander": 0.08620689655172414,
+          "einthoven": 1.0,
+          "heart_rate": 0.00046598322460391424,
+          "hf_noise": 0.7926374650512582,
+          "no_qrs": 0.001863932898415657,
+          "widespread_noise": 0.0009319664492078285
+        }
+      },
+      {
+        "level": 0.2,
+        "macro_auroc": 0.8181897445918546,
+        "n": 2146,
+        "status": {
+          "ok": 0.0,
+          "warning": 0.8741845293569431,
+          "poor": 0.12581547064305684
+        },
+        "flagged_any": 1.0,
+        "issue_rates": {
+          "amplitude_high:poor": 0.0065237651444548,
+          "baseline_wander:warning": 0.07781919850885369,
+          "einthoven:warning": 1.0,
+          "heart_rate:warning": 0.00046598322460391424,
+          "hf_noise:warning": 0.9995340167753961,
+          "no_qrs:poor": 0.06150978564771668,
+          "widespread_noise:poor": 0.07595526561043803
+        },
+        "code_rates": {
+          "amplitude_high": 0.0065237651444548,
+          "baseline_wander": 0.07781919850885369,
+          "einthoven": 1.0,
+          "heart_rate": 0.00046598322460391424,
+          "hf_noise": 0.9995340167753961,
+          "no_qrs": 0.06150978564771668,
+          "widespread_noise": 0.07595526561043803
+        }
+      },
+      {
+        "level": 0.3,
+        "macro_auroc": 0.7086262581840739,
+        "n": 2146,
+        "status": {
+          "ok": 0.0,
+          "warning": 0.04054054054054054,
+          "poor": 0.9594594594594594
+        },
+        "flagged_any": 1.0,
+        "issue_rates": {
+          "amplitude_high:poor": 0.014911463187325256,
+          "baseline_wander:warning": 0.07781919850885369,
+          "einthoven:warning": 1.0,
+          "hf_noise:warning": 1.0,
+          "no_qrs:poor": 0.8797763280521901,
+          "widespread_noise:poor": 0.8285181733457595
+        },
+        "code_rates": {
+          "amplitude_high": 0.014911463187325256,
+          "baseline_wander": 0.07781919850885369,
+          "einthoven": 1.0,
+          "hf_noise": 1.0,
+          "no_qrs": 0.8797763280521901,
+          "widespread_noise": 0.8285181733457595
+        }
+      },
+      {
+        "level": 0.5,
+        "macro_auroc": 0.6324911437207886,
+        "n": 2146,
+        "status": {
+          "ok": 0.0,
+          "warning": 0.0,
+          "poor": 1.0
+        },
+        "flagged_any": 1.0,
+        "issue_rates": {
+          "amplitude_high:poor": 0.05125815470643057,
+          "baseline_wander:warning": 0.07968313140726933,
+          "einthoven:warning": 1.0,
+          "hf_noise:warning": 1.0,
+          "no_qrs:poor": 1.0,
+          "widespread_noise:poor": 0.9990680335507922
+        },
+        "code_rates": {
+          "amplitude_high": 0.05125815470643057,
+          "baseline_wander": 0.07968313140726933,
+          "einthoven": 1.0,
+          "hf_noise": 1.0,
+          "no_qrs": 1.0,
+          "widespread_noise": 0.9990680335507922
+        }
+      }
+    ],
+    "baseline_drift": [
+      {
+        "level": 0.0,
+        "macro_auroc": 0.9276948928598412,
+        "n": 2146,
+        "status": {
+          "ok": 0.8890959925442684,
+          "warning": 0.11043802423112768,
+          "poor": 0.00046598322460391424
+        },
+        "flagged_any": 0.11090400745573159,
+        "issue_rates": {
+          "baseline_wander:warning": 0.0983224603914259,
+          "heart_rate:warning": 0.0009319664492078285,
+          "hf_noise:warning": 0.014445479962721343,
+          "no_qrs:poor": 0.00046598322460391424
+        },
+        "code_rates": {
+          "baseline_wander": 0.0983224603914259,
+          "heart_rate": 0.0009319664492078285,
+          "hf_noise": 0.014445479962721343,
+          "no_qrs": 0.00046598322460391424
+        }
+      },
+      {
+        "level": 0.25,
+        "macro_auroc": 0.9188497997157583,
+        "n": 2146,
+        "status": {
+          "ok": 0.0,
+          "warning": 0.9967381174277726,
+          "poor": 0.0032618825722274
+        },
+        "flagged_any": 1.0,
+        "issue_rates": {
+          "amplitude_high:poor": 0.0027958993476234857,
+          "baseline_wander:warning": 0.3070829450139795,
+          "einthoven:warning": 1.0,
+          "heart_rate:warning": 0.0009319664492078285,
+          "hf_noise:warning": 0.011649580615097856,
+          "no_qrs:poor": 0.00046598322460391424
+        },
+        "code_rates": {
+          "amplitude_high": 0.0027958993476234857,
+          "baseline_wander": 0.3070829450139795,
+          "einthoven": 1.0,
+          "heart_rate": 0.0009319664492078285,
+          "hf_noise": 0.011649580615097856,
+          "no_qrs": 0.00046598322460391424
+        }
+      },
+      {
+        "level": 0.5,
+        "macro_auroc": 0.8947365558659065,
+        "n": 2146,
+        "status": {
+          "ok": 0.0,
+          "warning": 0.9902143522833178,
+          "poor": 0.0097856477166822
+        },
+        "flagged_any": 1.0,
+        "issue_rates": {
+          "amplitude_high:poor": 0.007921714818266543,
+          "baseline_wander:warning": 0.8690587138863001,
+          "einthoven:warning": 1.0,
+          "heart_rate:warning": 0.0009319664492078285,
+          "hf_noise:warning": 0.0097856477166822,
+          "no_qrs:poor": 0.00046598322460391424,
+          "widespread_noise:poor": 0.0013979496738117428
+        },
+        "code_rates": {
+          "amplitude_high": 0.007921714818266543,
+          "baseline_wander": 0.8690587138863001,
+          "einthoven": 1.0,
+          "heart_rate": 0.0009319664492078285,
+          "hf_noise": 0.0097856477166822,
+          "no_qrs": 0.00046598322460391424,
+          "widespread_noise": 0.0013979496738117428
+        }
+      },
+      {
+        "level": 1.0,
+        "macro_auroc": 0.807895247155751,
+        "n": 2146,
+        "status": {
+          "ok": 0.0,
+          "warning": 0.9389561975768872,
+          "poor": 0.06104380242311277
+        },
+        "flagged_any": 1.0,
+        "issue_rates": {
+          "amplitude_high:poor": 0.045666356011183594,
+          "baseline_wander:warning": 1.0,
+          "einthoven:warning": 1.0,
+          "heart_rate:warning": 0.0009319664492078285,
+          "hf_noise:warning": 0.004193849021435228,
+          "no_qrs:poor": 0.00046598322460391424,
+          "widespread_noise:poor": 0.020037278657968314
+        },
+        "code_rates": {
+          "amplitude_high": 0.045666356011183594,
+          "baseline_wander": 1.0,
+          "einthoven": 1.0,
+          "heart_rate": 0.0009319664492078285,
+          "hf_noise": 0.004193849021435228,
+          "no_qrs": 0.00046598322460391424,
+          "widespread_noise": 0.020037278657968314
+        }
+      },
+      {
+        "level": 2.0,
+        "macro_auroc": 0.6455253001952375,
+        "n": 2146,
+        "status": {
+          "ok": 0.0,
+          "warning": 0.32898415657036345,
+          "poor": 0.6710158434296365
+        },
+        "flagged_any": 1.0,
+        "issue_rates": {
+          "amplitude_high:poor": 0.30242311276794037,
+          "baseline_wander:warning": 1.0,
+          "einthoven:warning": 1.0,
+          "heart_rate:warning": 0.0009319664492078285,
+          "hf_noise:warning": 0.0013979496738117428,
+          "no_qrs:poor": 0.00046598322460391424,
+          "widespread_noise:poor": 0.5265610438024231
+        },
+        "code_rates": {
+          "amplitude_high": 0.30242311276794037,
+          "baseline_wander": 1.0,
+          "einthoven": 1.0,
+          "heart_rate": 0.0009319664492078285,
+          "hf_noise": 0.0013979496738117428,
+          "no_qrs": 0.00046598322460391424,
+          "widespread_noise": 0.5265610438024231
+        }
+      }
+    ]
+  },
+  "faults": {
+    "flat_lead_V3": {
+      "macro_auroc": 0.9229334524845522,
+      "n": 2146,
+      "status": {
+        "ok": 0.0,
+        "warning": 0.0,
+        "poor": 1.0
+      },
+      "flagged_any": 1.0,
+      "issue_rates": {
+        "baseline_wander:warning": 0.10251630941286113,
+        "flat_lead:poor": 1.0,
+        "heart_rate:warning": 0.0009319664492078285,
+        "hf_noise:warning": 0.0195712954333644,
+        "no_qrs:poor": 0.00046598322460391424
+      },
+      "code_rates": {
+        "baseline_wander": 0.10251630941286113,
+        "flat_lead": 1.0,
+        "heart_rate": 0.0009319664492078285,
+        "hf_noise": 0.0195712954333644,
+        "no_qrs": 0.00046598322460391424
+      }
+    },
+    "dropout_last_5s_all_leads": {
+      "macro_auroc": 0.919638750213142,
+      "n": 2146,
+      "status": {
+        "ok": 0.0,
+        "warning": 0.0,
+        "poor": 1.0
+      },
+      "flagged_any": 1.0,
+      "issue_rates": {
+        "baseline_wander:warning": 0.11649580615097857,
+        "dropout:poor": 1.0,
+        "heart_rate:warning": 0.0013979496738117428,
+        "hf_noise:warning": 0.0032618825722274,
+        "no_qrs:poor": 0.00046598322460391424
+      },
+      "code_rates": {
+        "baseline_wander": 0.11649580615097857,
+        "dropout": 1.0,
+        "heart_rate": 0.0013979496738117428,
+        "hf_noise": 0.0032618825722274,
+        "no_qrs": 0.00046598322460391424
+      }
+    },
+    "dropout_aVR_last_7s": {
+      "macro_auroc": 0.9219586713091055,
+      "n": 2146,
+      "status": {
+        "ok": 0.0,
+        "warning": 0.0,
+        "poor": 1.0
+      },
+      "flagged_any": 1.0,
+      "issue_rates": {
+        "baseline_wander:warning": 0.09878844361602983,
+        "dropout:poor": 1.0,
+        "einthoven:warning": 1.0,
+        "heart_rate:warning": 0.0009319664492078285,
+        "hf_noise:warning": 0.014445479962721343,
+        "no_qrs:poor": 0.00046598322460391424
+      },
+      "code_rates": {
+        "baseline_wander": 0.09878844361602983,
+        "dropout": 1.0,
+        "einthoven": 1.0,
+        "heart_rate": 0.0009319664492078285,
+        "hf_noise": 0.014445479962721343,
+        "no_qrs": 0.00046598322460391424
+      }
+    },
+    "units_uV_read_as_mV": {
+      "macro_auroc": 0.6283902239875679,
+      "n": 2146,
+      "status": {
+        "ok": 0.0,
+        "warning": 0.0,
+        "poor": 1.0
+      },
+      "flagged_any": 1.0,
+      "issue_rates": {
+        "amplitude_high:poor": 1.0,
+        "baseline_wander:warning": 0.0983224603914259,
+        "heart_rate:warning": 0.0009319664492078285,
+        "hf_noise:warning": 0.014445479962721343,
+        "no_qrs:poor": 0.00046598322460391424
+      },
+      "code_rates": {
+        "amplitude_high": 1.0,
+        "baseline_wander": 0.0983224603914259,
+        "heart_rate": 0.0009319664492078285,
+        "hf_noise": 0.014445479962721343,
+        "no_qrs": 0.00046598322460391424
+      }
+    },
+    "units_V_read_as_mV": {
+      "macro_auroc": 0.5555504438930217,
+      "n": 2146,
+      "status": {
+        "ok": 0.0,
+        "warning": 0.0,
+        "poor": 1.0
+      },
+      "flagged_any": 1.0,
+      "issue_rates": {
+        "flat_lead:poor": 1.0,
+        "heart_rate:warning": 0.0009319664492078285,
+        "no_qrs:poor": 0.00046598322460391424
+      },
+      "code_rates": {
+        "flat_lead": 1.0,
+        "heart_rate": 0.0009319664492078285,
+        "no_qrs": 0.00046598322460391424
+      }
+    },
+    "swap_II_III": {
+      "macro_auroc": 0.9172589217973245,
+      "n": 2146,
+      "status": {
+        "ok": 0.00046598322460391424,
+        "warning": 0.9990680335507922,
+        "poor": 0.00046598322460391424
+      },
+      "flagged_any": 0.9995340167753961,
+      "issue_rates": {
+        "baseline_wander:warning": 0.0983224603914259,
+        "einthoven:warning": 0.9990680335507922,
+        "heart_rate:warning": 0.0009319664492078285,
+        "hf_noise:warning": 0.014445479962721343,
+        "no_qrs:poor": 0.00046598322460391424
+      },
+      "code_rates": {
+        "baseline_wander": 0.0983224603914259,
+        "einthoven": 0.9990680335507922,
+        "heart_rate": 0.0009319664492078285,
+        "hf_noise": 0.014445479962721343,
+        "no_qrs": 0.00046598322460391424
+      }
+    },
+    "swap_I_II": {
+      "macro_auroc": 0.9190632934964551,
+      "n": 2146,
+      "status": {
+        "ok": 0.0,
+        "warning": 0.9995340167753961,
+        "poor": 0.00046598322460391424
+      },
+      "flagged_any": 1.0,
+      "issue_rates": {
+        "baseline_wander:warning": 0.0983224603914259,
+        "einthoven:warning": 1.0,
+        "heart_rate:warning": 0.0009319664492078285,
+        "hf_noise:warning": 0.014445479962721343,
+        "no_qrs:poor": 0.00046598322460391424
+      },
+      "code_rates": {
+        "baseline_wander": 0.0983224603914259,
+        "einthoven": 1.0,
+        "heart_rate": 0.0009319664492078285,
+        "hf_noise": 0.014445479962721343,
+        "no_qrs": 0.00046598322460391424
+      }
+    },
+    "invert_I": {
+      "macro_auroc": 0.897273449847987,
+      "n": 2146,
+      "status": {
+        "ok": 0.0,
+        "warning": 0.9995340167753961,
+        "poor": 0.00046598322460391424
+      },
+      "flagged_any": 1.0,
+      "issue_rates": {
+        "baseline_wander:warning": 0.0983224603914259,
+        "einthoven:warning": 1.0,
+        "heart_rate:warning": 0.0009319664492078285,
+        "hf_noise:warning": 0.014445479962721343,
+        "no_qrs:poor": 0.00046598322460391424
+      },
+      "code_rates": {
+        "baseline_wander": 0.0983224603914259,
+        "einthoven": 1.0,
+        "heart_rate": 0.0009319664492078285,
+        "hf_noise": 0.014445479962721343,
+        "no_qrs": 0.00046598322460391424
+      }
+    },
+    "pure_noise_no_ecg": {
+      "macro_auroc": 0.5013030314714394,
+      "n": 2146,
+      "status": {
+        "ok": 0.0,
+        "warning": 0.0,
+        "poor": 1.0
+      },
+      "flagged_any": 1.0,
+      "issue_rates": {
+        "einthoven:warning": 1.0,
+        "hf_noise:warning": 1.0,
+        "no_qrs:poor": 1.0,
+        "widespread_noise:poor": 1.0
+      },
+      "code_rates": {
+        "einthoven": 1.0,
+        "hf_noise": 1.0,
+        "no_qrs": 1.0,
+        "widespread_noise": 1.0
+      }
+    },
+    "duplicate_II_as_V1": {
+      "macro_auroc": 0.8727207986052372,
+      "n": 2146,
+      "status": {
+        "ok": 0.0,
+        "warning": 0.9995340167753961,
+        "poor": 0.00046598322460391424
+      },
+      "flagged_any": 1.0,
+      "issue_rates": {
+        "baseline_wander:warning": 0.097856477166822,
+        "duplicate_leads:warning": 1.0,
+        "heart_rate:warning": 0.0009319664492078285,
+        "hf_noise:warning": 0.016309412861136997,
+        "no_qrs:poor": 0.00046598322460391424
+      },
+      "code_rates": {
+        "baseline_wander": 0.097856477166822,
+        "duplicate_leads": 1.0,
+        "heart_rate": 0.0009319664492078285,
+        "hf_noise": 0.016309412861136997,
+        "no_qrs": 0.00046598322460391424
+      }
+    }
+  },
+  "elapsed_s": 279.8,
+  "git": {
+    "commit": "450ca81",
+    "dirty": true
+  },
+  "created": "2026-11-06 10:44:34"
+}
