@@ -1,13 +1,17 @@
 """Gradio-демо: multi-label классификация 12-канальной ЭКГ PTB-XL по 5 суперклассам.
 
-Исследовательский прототип, НЕ медицинский инструмент. Запуск локально (из корня проекта):
+Исследовательский прототип, НЕ медицинский инструмент. Принимает WFDB (.hea + .dat), EDF и CSV, проверяет
+качество сигнала и формирует PDF-отчёт. Запуск локально (из корня проекта):
     python scripts/export_app_bundle.py --config configs/app.yaml   # один раз: собрать app/model, app/examples
     python app/app.py                                               # http://127.0.0.1:7860
 На Hugging Face Spaces этот файл указан как app_file в app/README.md.
 """
 from __future__ import annotations
 
+import html
 import json
+import tempfile
+import time
 from pathlib import Path
 from typing import Any
 
@@ -18,7 +22,11 @@ from matplotlib.patches import Patch
 from matplotlib.ticker import FuncFormatter, MultipleLocator
 from scipy.ndimage import uniform_filter1d
 
-from inference import APP_DIR, Bundle, Record, calibrated_probs, integrated_gradients, load_bundle, load_record, normalize, predict_logits
+from inference import (APP_DIR, MODEL_DIR, Bundle, Record, calibrated_probs, integrated_gradients, load_bundle, load_record,
+                       normalize, predict_logits)
+from quality import QualityReport, assess_quality
+from readers import SUPPORTED_EXTENSIONS
+from report import build_pdf, classes_for_saliency
 
 CLASS_NAMES_RU: dict[str, str] = {
     "NORM": "норма",
@@ -29,6 +37,9 @@ CLASS_NAMES_RU: dict[str, str] = {
 }
 REPO_URL = "https://github.com/Saltyrril/ekg_project"
 EXAMPLES_DIR = APP_DIR / "examples"
+REPORTS_DIR = Path(tempfile.gettempdir()) / "ekg_reports"
+REPORT_TTL_S = 3600
+UNIT_CHOICES = [("мВ (по умолчанию)", "mV"), ("мкВ", "uV"), ("В", "V")]
 SMOOTH_SAMPLES = 5  # только для показа карты: скользящая сумма 50 мс (как в src/explain.py)
 
 DISCLAIMER_HTML = """
@@ -45,6 +56,11 @@ CSS = """
               padding: 14px 18px; font-size: 15px; line-height: 1.45; }
 .disclaimer-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; color: #8a3200; }
 .disclaimer b { color: #8a3200; }
+.quality { border-radius: 10px; padding: 10px 16px; font-size: 14px; line-height: 1.45; border: 2px solid; }
+.quality-ok { border-color: #1a7f37; background: #eefaf1; color: #0f4d22; }
+.quality-warning { border-color: #b54708; background: #fff9f0; color: #4a2400; }
+.quality-poor { border-color: #b42318; background: #fff0ee; color: #6b130c; }
+.quality ul { margin: 4px 0 0 18px; padding: 0; }
 """
 
 BUNDLE: Bundle = load_bundle()
@@ -174,12 +190,12 @@ def _saliency_figure(rec: Record, x: np.ndarray, probs: np.ndarray, cls: str) ->
     return plot_saliency(rec, attr, BUNDLE.leads, BUNDLE.fs, title)
 
 
-def _results_table(probs: np.ndarray) -> str:
+def _results_table(probs: np.ndarray, unreliable: bool = False) -> str:
     """Markdown-таблица: вероятность, порог с val и вывод модели по каждому классу."""
     rows = ["| Класс | Вероятность | Порог (подобран на val) | Ответ модели |", "|---|---:|---:|---|"]
     for c, p, thr in zip(BUNDLE.classes, probs, BUNDLE.thresholds):
         verdict = "**выше порога**" if p >= thr else "ниже порога"
-        rows.append(f"| {class_title(c)} | {p:.3f} | {thr:.3f} | {verdict} |")
+        rows.append(f"| {class_title(c)} | {p:.3f} | {thr:.3f} | {verdict}{' (ненадёжно)' if unreliable else ''} |")
     rows.append("")
     rows.append("Классы не исключают друг друга (multi-label), поэтому вероятности не обязаны давать в сумме 1. "
                 "Вероятности откалиброваны температурой, подобранной на валидационном фолде 9.")
@@ -188,7 +204,7 @@ def _results_table(probs: np.ndarray) -> str:
 
 def _record_info(rec: Record, probs: np.ndarray) -> str:
     """Сведения о записи, предупреждения предобработки и (для встроенных примеров) разметка PTB-XL."""
-    lines = [f"**Запись:** `{rec.name}`, исходная частота {rec.fs_original} Гц."]
+    lines = [f"**Запись:** `{rec.name}`, формат {rec.fmt}, исходная частота {rec.fs_original} Гц."]
     above = [c for c, p, thr in zip(BUNDLE.classes, probs, BUNDLE.thresholds) if p >= thr]
     lines.append(f"**Выше порога:** {', '.join(class_title(c) for c in above) if above else 'ни один класс'}.")
     ex = EXAMPLES_META.get(rec.name)
@@ -201,28 +217,64 @@ def _record_info(rec: Record, probs: np.ndarray) -> str:
     return "\n\n".join(lines)
 
 
-def analyze(files: list[str] | None) -> tuple[Any, ...]:
-    """Полный анализ: чтение, вероятности, график отведений, карта значимости для самого вероятного класса."""
+def _quality_html(q: QualityReport) -> str:
+    """Плашка с итогом проверки качества сигнала и списком замечаний."""
+    head = {"ok": "Качество сигнала: хорошее", "warning": "Качество сигнала: есть замечания",
+            "poor": "Качество сигнала низкое: ответ модели ненадёжен"}[q.status]
+    items = "".join(f"<li>{'✖ ' if i.severity == 'poor' else ''}{html.escape(i.message)}"
+                    f"{' <b>[' + html.escape(', '.join(i.leads)) + ']</b>' if i.leads else ''}</li>" for i in q.issues)
+    return (f'<div class="quality quality-{q.status}"><b>{head}</b>{"<ul>" + items + "</ul>" if items else ""}'
+            "<div style='font-size:12px;margin-top:4px'>Проверка эвристическая (пороги подобраны на PTB-XL, фолд 9): "
+            "она не гарантирует ни качества записи, ни верности ответа модели.</div></div>")
+
+
+def analyze(files: list[str] | None, fs: float | None = None, unit: str | None = None) -> tuple[Any, ...]:
+    """Полный анализ: чтение, проверка качества, вероятности, график отведений, карта значимости самого вероятного класса.
+
+    `fs` и `unit` (частота Гц и единицы) используются только для CSV: в WFDB и EDF они записаны в файле.
+    """
     if not files:
-        raise gr.Error("Загрузите два файла одной записи PTB-XL: <имя>.hea и <имя>.dat (или выберите пример).")
+        raise gr.Error("Загрузите запись: два файла WFDB (.hea + .dat), один .edf или один .csv (или выберите пример).")
     try:
-        rec = load_record(files, BUNDLE)
+        rec = load_record(files, BUNDLE, fs=fs, unit=unit)
     except ValueError as e:
         raise gr.Error(str(e)) from e
+    quality = assess_quality(rec.signal, BUNDLE.leads, BUNDLE.fs)
     x = normalize(rec.signal, BUNDLE)
     probs = calibrated_probs(predict_logits(x[None], BUNDLE), BUNDLE)[0]
     top_cls = BUNDLE.classes[int(np.argmax(probs))]
     label = {class_title(c): float(p) for c, p in zip(BUNDLE.classes, probs)}
-    state = {"rec": rec, "x": x, "probs": probs}
+    state = {"rec": rec, "x": x, "probs": probs, "quality": quality}
     return (
         label,
-        _results_table(probs),
+        _quality_html(quality),
+        _results_table(probs, unreliable=quality.status == "poor"),
         _record_info(rec, probs),
         plot_leads(rec, BUNDLE.leads, BUNDLE.fs),
         gr.Dropdown(value=top_cls, interactive=True),
         _saliency_figure(rec, x, probs, top_cls),
         state,
+        gr.File(value=None),
     )
+
+
+def make_report(state: dict[str, Any] | None) -> str:
+    """Формирует PDF-отчёт по последней проанализированной записи и возвращает путь к файлу."""
+    if not state:
+        raise gr.Error("Сначала проанализируйте запись.")
+    rec, x, probs, quality = state["rec"], state["x"], state["probs"], state["quality"]
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    for old in REPORTS_DIR.glob("*.pdf"):  # отчёты содержат данные записи: не копим их дольше часа
+        if time.time() - old.stat().st_mtime > REPORT_TTL_S:
+            old.unlink(missing_ok=True)
+    classes = classes_for_saliency(probs, BUNDLE.thresholds, BUNDLE.classes)
+    saliency = [(c, _saliency_figure(rec, x, probs, c)) for c in classes]
+    safe_name = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in rec.name)[:60] or "record"
+    path = REPORTS_DIR / f"ekg_report_{safe_name}_{time.strftime('%Y%m%d_%H%M%S')}.pdf"
+    titles = {c: class_title(c) for c in BUNDLE.classes}
+    build_pdf(path, rec=rec, probs=probs, bundle=BUNDLE, quality=quality, titles=titles,
+              leads_fig=plot_leads(rec, BUNDLE.leads, BUNDLE.fs), saliency=saliency, model_dir=MODEL_DIR)
+    return str(path)
 
 
 def update_saliency(cls: str, state: dict[str, Any] | None) -> Figure | None:
@@ -250,18 +302,25 @@ def build_demo() -> gr.Blocks:
         gr.HTML(DISCLAIMER_HTML)
         gr.Markdown(
             "## Классификация 12-канальной ЭКГ (PTB-XL, 5 суперклассов)\n"
-            "Загрузите запись из [PTB-XL](https://physionet.org/content/ptb-xl/): **два файла** `<имя>.hea` и "
-            "`<имя>.dat` из `records100/` (100 Гц) или `records500/` (500 Гц, будет пересчитана в 100 Гц). "
-            "Модель вернёт вероятности пяти диагностических суперклассов и карту значимости."
+            "Загрузите запись 12 отведений длиной от 10 с: **WFDB** (два файла `<имя>.hea` + `<имя>.dat`, например из "
+            "[PTB-XL](https://physionet.org/content/ptb-xl/)), один **EDF** или один **CSV** (столбцы I, II, III, aVR, "
+            "aVL, aVF, V1–V6, по строке на отсчёт). Частота от 100 Гц, другие частоты пересчитываются в 100 Гц. "
+            "Приложение проверит качество сигнала и вернёт вероятности пяти диагностических суперклассов, карту "
+            "значимости и PDF-отчёт."
         )
         state = gr.State()
         with gr.Row():
             with gr.Column(scale=2):
-                files = gr.File(label="Запись WFDB: .hea + .dat", file_count="multiple",
-                                file_types=[".hea", ".dat"], type="filepath")
+                files = gr.File(label="Запись: WFDB (.hea + .dat), EDF или CSV", file_count="multiple",
+                                file_types=SUPPORTED_EXTENSIONS, type="filepath")
+                with gr.Accordion("Только для CSV: частота и единицы", open=False):
+                    fs_in = gr.Number(label="Частота дискретизации, Гц (пусто — взять из столбца времени)", value=None,
+                                      precision=3, minimum=0)
+                    unit_in = gr.Dropdown(choices=UNIT_CHOICES, value="mV", label="Единицы сигнала в CSV")
                 run_btn = gr.Button("Анализировать", variant="primary")
             with gr.Column(scale=3):
                 probs_label = gr.Label(num_top_classes=len(BUNDLE.classes), label="Вероятности классов")
+        quality_html = gr.HTML()
         table = gr.Markdown()
         info = gr.Markdown()
         leads_plot = gr.Plot(label="12 отведений", format="png")
@@ -276,21 +335,27 @@ def build_demo() -> gr.Blocks:
             "причины** и не разметка патологии: модель может опираться на признаки, которые врач счёл бы "
             "неважными. Проверку карт (тест стирания, контроль случайными весами) см. в репозитории."
         )
-        outputs = [probs_label, table, info, leads_plot, cls_dd, sal_plot, state]
+        gr.Markdown("### PDF-отчёт")
+        report_btn = gr.Button("Сформировать PDF-отчёт")
+        report_file = gr.File(label="PDF-отчёт (сводка, качество сигнала, 12 отведений, карты значимости, версия модели)",
+                              interactive=False)
+        outputs = [probs_label, quality_html, table, info, leads_plot, cls_dd, sal_plot, state, report_file]
         ex_files, ex_labels = _examples()
         if ex_files:
-            gr.Examples(examples=ex_files, inputs=[files], outputs=outputs, fn=analyze, run_on_click=True,
+            gr.Examples(examples=[[f[0], None, "mV"] for f in ex_files], inputs=[files, fs_in, unit_in], outputs=outputs,
+                        fn=analyze, run_on_click=True,
                         cache_examples=False, example_labels=ex_labels,
                         label="Примеры: случайные записи валидационного фолда 9 PTB-XL (по одной на класс)")
-        run_btn.click(analyze, inputs=[files], outputs=outputs)
+        run_btn.click(analyze, inputs=[files, fs_in, unit_in], outputs=outputs)
+        report_btn.click(make_report, inputs=[state], outputs=[report_file])
         cls_dd.input(update_saliency, inputs=[cls_dd, state], outputs=[sal_plot])
         gr.Markdown(
             f"---\nМодель: `{meta['run']}` ({meta['model']['name']}, 100 Гц, 12 отведений). Обучение на "
             "фолдах 1–8 PTB-XL, ранняя остановка, температура и пороги на фолде 9. Тестовые метрики с 95% ДИ "
             f"и ограничения описаны в [README проекта]({REPO_URL}).\n\n"
             "Данные: PTB-XL (Wagner et al., 2020, *Scientific Data*), PhysioNet, лицензия CC BY 4.0. "
-            "Загруженные файлы лежат только во временном кэше Gradio и удаляются примерно через час; "
-            "приложение их никуда не отправляет и не сохраняет."
+            "Загруженные файлы лежат только во временном кэше Gradio, PDF-отчёты во временной папке "
+            "системы; и те и другие удаляются примерно через час. Приложение ничего никуда не отправляет."
         )
         gr.HTML(DISCLAIMER_HTML)
     return demo

@@ -1,0 +1,14 @@
+# Проверка порогов app/quality.py на ВАЛИДАЦИОННОМ фолде 9 (test не читается).
+# Запуск: python scripts/check_quality.py --config configs/quality_check.yaml
+seed: 42
+
+data_config: configs/data.yaml
+fold: 9                         # должен быть 9; другое значение — ошибка
+model_dir: app/model            # модель приложения (для влияния искажений на качество предсказаний)
+out_dir: results
+
+# Искусственные искажения чистых записей val. Ряд «0» — исходные записи.
+noise_levels: [0.0, 0.05, 0.1, 0.2, 0.3, 0.5]    # std белого шума / размах отведения (0.5–99.5 перцентили)
+drift_levels: [0.0, 0.25, 0.5, 1.0, 2.0]         # амплитуда синуса 0.3 Гц / размах отведения
+drift_freq_hz: 0.3
+batch_size: 256
